@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты опроса</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        .recommendations {
+            margin: 25px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .alert-critical {
+            border: 5px solid #c0392b;
+            text-align: center;
+            border-radius: 5px;
+        }
+        .recommendations ul {
+            padding-left: 20px;
+            margin: 15px;
+        }
+        .recommendations a {
+            color: #27ae60;
+            text-decoration: none;
+            margin: 10px;
+        }
+        .recommendations a:hover {
+            text-decoration: underline;
+        }
+        .emergency-btn {
+            padding: 10px 100px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Результаты опроса</h1>
+
+        <div class="user-info">
+            <p> <a href="/other_pages" style="text-decoration: none; color: inherit;">Возраст: </a> {{ age }}</p>
+            <p>Пол:
+                {% if gender == 'male' %}Мужской
+                {% elif gender == 'female' %}Женский
+                {% else %}Другой
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="results-container">
+            {% for result in results %}
+            <div class="result-block" style="border-left: 10px solid {{ result.color }};">
+                <h3>{{ result.block }}</h3>
+                <div class="score">Баллы: {{ result.score }} из {{ result.max_score }}</div>
+                <div class="level">{{ result.level }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="fuzzy-result">
+            <h2>Общий уровень девиантности</h2>
+            <div class="fuzzy-score">Оценка системы: {{ "%.2f"|format(fuzzy_result.value) }}/10</div>
+
+            <!-- Прогресс-бар с цветовой индикацией -->
+            <div class="progress-container" style="margin: 20px 0;">
+                <div class="progress-bar" style="width: {{ fuzzy_result.value * 10 }}%;
+                    background:
+                    {% if fuzzy_result.value >= 8.5 %} #c0392b
+                    {% elif fuzzy_result.value >= 7 %} #e74c3c
+                    {% elif fuzzy_result.value >= 5.5 %} #e67e22
+                    {% elif fuzzy_result.value >= 4 %} #f1c40f
+                    {% elif fuzzy_result.value >= 2.5 %} #27ae60
+                    {% else %} #2ecc71
+                    {% endif %};">
+                </div>
+            </div>
+
+            <!-- Детализация всех уровней -->
+            <div class="levels-info" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 20px 0;">
+                <!-- Крайне низкий -->
+                <div class="level-card" style="border-left: 5px solid #2ecc71; padding: 5px 10px; background: #f8f9fa;">
+                    <strong>0-2.5:</strong> Крайне низкий<br>
+                    <small>Нормативное поведение</small>
+                </div>
+
+                <!-- Низкий -->
+                <div class="level-card" style="border-left: 5px solid #27ae60; padding: 5px 10px; background: #f8f9fa;">
+                    <strong>2.5-4:</strong> Низкий<br>
+                    <small>Минимальные признаки</small>
+                </div>
+
+                <!-- Умеренный -->
+                <div class="level-card" style="border-left: 5px solid #f1c40f; padding: 5px 10px; background: #f8f9fa;">
+                    <strong>4-5.5:</strong> Умеренный<br>
+                    <small>Отдельные случаи отклонений</small>
+                </div>
+
+                <!-- Средний -->
+                <div class="level-card" style="border-left: 5px solid #e67e22; padding: 5px 10px; background: #f8f9fa;">
+                    <strong>5.5-7:</strong> Средний<br>
+                    <small>Систематические нарушения</small>
+                </div>
+
+                <!-- Высокий -->
+                <div class="level-card" style="border-left: 5px solid #e74c3c; padding: 5px 10px; background: #f8f9fa;">
+                    <strong>7-8.5:</strong> Высокий<br>
+                    <small>Опасные паттерны поведения</small>
+                </div>
+
+                <!-- Критический -->
+                <div class="level-card" style="border-left: 5px solid #c0392b; padding: 5px 10px; background: #f8f9fa;">
+                    <strong>8.5-10:</strong> Критический<br>
+                    <small>Требуется срочное вмешательство</small>
+                </div>
+            </div>
+
+            <!-- Текущая интерпретация -->
+            <div class="fuzzy-interpretation" style="
+                padding: 15px;
+                border-radius: 5px;
+                background:
+                {% if fuzzy_result.value >= 8.5 %} rgba(192, 57, 43, 0.1)
+                {% elif fuzzy_result.value >= 7 %} rgba(231, 76, 60, 0.1)
+                {% elif fuzzy_result.value >= 5.5 %} rgba(230, 126, 34, 0.1)
+                {% elif fuzzy_result.value >= 4 %} rgba(241, 196, 15, 0.1)
+                {% elif fuzzy_result.value >= 2.5 %} rgba(39, 174, 96, 0.1)
+                {% else %} rgba(46, 204, 113, 0.1)
+                {% endif %};
+                border-left: 5px solid
+                {% if fuzzy_result.value >= 8.5 %} #c0392b
+                {% elif fuzzy_result.value >= 7 %} #e74c3c
+                {% elif fuzzy_result.value >= 5.5 %} #e67e22
+                {% elif fuzzy_result.value >= 4 %} #f1c40f
+                {% elif fuzzy_result.value >= 2.5 %} #27ae60
+                {% else %} #2ecc71
+                {% endif %};">
+                <h3 style="margin-top: 0;">
+                    {% if fuzzy_result.value >= 8.5 %} Критический уровень
+                    {% elif fuzzy_result.value >= 7 %} Высокий уровень
+                    {% elif fuzzy_result.value >= 5.5 %} Средний уровень
+                    {% elif fuzzy_result.value >= 4 %} Умеренный уровень
+                    {% elif fuzzy_result.value >= 2.5 %} Низкий уровень
+                    {% else %} Крайне низкий уровень
+                    {% endif %}
+                </h3>
+                <p style="margin-bottom: 0;">
+                    {% if fuzzy_result.value >= 8.5 %} Требуется срочное вмешательство специалистов
+                    {% elif fuzzy_result.value >= 7 %} Опасные паттерны поведения - рекомендована консультация психолога
+                    {% elif fuzzy_result.value >= 5.5 %} Систематические нарушения - требуется профилактическая работа
+                    {% elif fuzzy_result.value >= 4 %} Периодические отклонения - рекомендуется наблюдение и коррекция
+                    {% elif fuzzy_result.value >= 2.5 %} Минимальные признаки девиантности
+                    {% else %} Нормативное поведение
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+        <div class="recommendations">
+            <div class="alert alert-critical">
+                <h4>Контакты для получения консультации психолога </h4>
+                <ul>
+                    <li><a href="https://psy-ego.ru" target="_blank">Центр подростковой психологии</a></li>
+                    <button onclick="location.href='tel:+79260299225'" class="emergency-btn">
+                        <i class="phone"></i> Телефон
+                    </button>
+                </ul>
+            </div>
+        </div>
+
+
+
+        
+        <div class="charts-container">
+            <div class="chart-card">
+                <h3>Функции принадлежности</h3>
+                <img src="data:image/png;base64,{{ fuzzy_result.membership_plot }}"
+                     alt="Функции принадлежности">
+            </div>
+
+            <div class="chart-card">
+                <h3>Ваши результаты</h3>
+                <img src="data:image/png;base64,{{ fuzzy_result.result_plot }}"
+                    alt="Результаты оценки">
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="/other_page" class="btn" style="background-color: #3498db;">Посмотреть мои ответы</a>
+            </a>
+            <a href="/" class="btn">Начать заново</a>
+        </div>
+    </div>
+</body>
+</html>
